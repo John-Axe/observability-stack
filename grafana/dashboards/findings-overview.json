@@ -12,6 +12,7 @@
     {
       "id": 1,
       "title": "Findings by severity",
+      "description": "Status colors, fixed regardless of theme: critical/high/medium/low/info always map to the same hue.",
       "type": "bargauge",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "datasource": { "type": "loki", "uid": "loki" },
@@ -29,7 +30,28 @@
           "mappings": [],
           "color": { "mode": "palette-classic" }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "critical" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#d03b3b" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "high" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#ec835a" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "medium" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#fab219" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "low" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#0ca30c" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "info" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#898781" } }]
+          }
+        ]
       },
       "options": {
         "displayMode": "gradient",
@@ -40,6 +62,7 @@
     {
       "id": 2,
       "title": "Findings over time by source",
+      "description": "One fixed hue per producer repo (same palette as the category panel), so a source reads the same color everywhere it appears on this dashboard.",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "datasource": { "type": "loki", "uid": "loki" },
@@ -52,14 +75,56 @@
         }
       ],
       "fieldConfig": {
-        "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 40, "stacking": { "mode": "normal" } } },
-        "overrides": []
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 40,
+            "stacking": { "mode": "normal" },
+            "lineWidth": 2
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "firewall-simulator" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#2a78d6" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "iam-privesc-mapper" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#4a3aa7" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "packet-sniffer" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#e87ba4" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "phishing-detector" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#e34948" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "dlp-secret-pii-scanner" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#1baf7a" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "intrusion-detection-system" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#eb6834" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "web-vuln-scanner" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#eda100" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "keylogger-detector" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#008300" } }]
+          }
+        ]
       },
       "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
     },
     {
       "id": 3,
       "title": "Findings by category",
+      "description": "One fixed hue per category, independent of severity's status colors, so category and severity never visually collide.",
       "type": "piechart",
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
       "datasource": { "type": "loki", "uid": "loki" },
@@ -71,11 +136,49 @@
           "queryType": "range"
         }
       ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "firewall" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#2a78d6" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "privesc" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#4a3aa7" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "network-recon" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#e87ba4" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "intrusion" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#eb6834" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "phishing" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#e34948" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "secret" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#1baf7a" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "vuln" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#eda100" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "integrity" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#008300" } }]
+          }
+        ]
+      },
       "options": { "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] } }
     },
     {
       "id": 4,
       "title": "Critical findings (last 24h)",
+      "description": "Status color: gray when zero, critical-red the moment one shows up.",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 8, "y": 8 },
       "datasource": { "type": "loki", "uid": "loki" },
@@ -88,15 +191,17 @@
       ],
       "fieldConfig": {
         "defaults": {
+          "color": { "mode": "thresholds" },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 1 }
+              { "color": "#898781", "value": null },
+              { "color": "#d03b3b", "value": 1 }
             ]
           }
         }
-      }
+      },
+      "options": { "colorMode": "background", "graphMode": "none" }
     },
     {
       "id": 5,
@@ -106,7 +211,13 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         { "refId": "A", "expr": "sum(count_over_time({job=\"findings\"}[$__range]))", "queryType": "range" }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "#2a78d6" }
+        }
+      },
+      "options": { "colorMode": "value", "graphMode": "area" }
     },
     {
       "id": 6,
