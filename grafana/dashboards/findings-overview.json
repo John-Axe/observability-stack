@@ -19,6 +19,7 @@
         {
           "refId": "A",
           "expr": "sum by (severity) (count_over_time({job=\"findings\"}[$__range]))",
+          "legendFormat": "{{severity}}",
           "queryType": "range"
         }
       ],
@@ -46,6 +47,7 @@
         {
           "refId": "A",
           "expr": "sum by (source) (count_over_time({job=\"findings\"}[$__interval]))",
+          "legendFormat": "{{source}}",
           "queryType": "range"
         }
       ],
@@ -65,6 +67,7 @@
         {
           "refId": "A",
           "expr": "sum by (category) (count_over_time({job=\"findings\"}[$__range]))",
+          "legendFormat": "{{category}}",
           "queryType": "range"
         }
       ],
