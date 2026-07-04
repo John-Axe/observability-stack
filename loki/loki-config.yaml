@@ -23,6 +23,16 @@ query_range:
         enabled: true
         max_size_mb: 100
 
+# Single-binary deployment defaults are tuned for a shared multi-tenant
+# cluster, not a local dashboard with a handful of panels all querying at
+# once on every refresh. Raise both limits so a normal dashboard load/refresh
+# never gets rejected with "too many outstanding requests".
+frontend:
+  max_outstanding_per_tenant: 4096
+
+querier:
+  max_concurrent: 16
+
 schema_config:
   configs:
     - from: 2020-10-24
