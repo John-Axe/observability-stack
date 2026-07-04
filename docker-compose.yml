@@ -1,0 +1,108 @@
+name: security-portfolio-observability
+
+# Free, local-only observability stack for the security-engineering portfolio
+# ecosystem. Every producer repo (dlp-secret-pii-scanner, iam-privesc-mapper,
+# ...) writes a findings.jsonl in its own repo root, in the shape defined by
+# ../finding-schema. Promtail tails all of them and ships to Loki; Grafana
+# renders them. Postgres/MinIO/LocalStack are reserved for later phases
+# (a findings-api, S3-shaped artifact storage, and AWS API emulation for
+# aws-auto-remediation demos) -- see ../portfolio-ecosystem/ROADMAP.md.
+#
+# No cloud services, no recurring cost. `docker compose down -v` to reclaim
+# everything.
+
+services:
+  loki:
+    image: grafana/loki:2.9.8
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    networks: [observability]
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.8
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    volumes:
+      - ./promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml:ro
+      # Read-only view of every sibling repo, so promtail can glob each
+      # repo's own findings.jsonl without per-repo compose wiring.
+      - ../:/repos:ro
+      - promtail-positions:/tmp/positions
+    depends_on: [loki]
+    networks: [observability]
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on: [loki]
+    networks: [observability]
+    restart: unless-stopped
+
+  # Reserved for the Phase 2 findings-api (FastAPI + Postgres) described in
+  # portfolio-ecosystem/ROADMAP.md. Not wired to anything yet.
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=findings
+      - POSTGRES_PASSWORD=findings
+      - POSTGRES_DB=findings
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks: [observability]
+    restart: unless-stopped
+
+  # Local S3-compatible storage -- replaces AWS S3 for anything that wants
+  # object storage in local dev (e.g. archived reports, demo assets).
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    networks: [observability]
+    restart: unless-stopped
+
+  # AWS API emulation for iam-privesc-mapper / aws-auto-remediation local
+  # dev and testing, without touching a real account or paying for it.
+  localstack:
+    image: localstack/localstack:3
+    environment:
+      - SERVICES=iam,lambda,cloudtrail,events,s3,dynamodb,sqs,sns,logs
+      - DEBUG=0
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack-data:/var/lib/localstack
+    networks: [observability]
+    restart: unless-stopped
+
+networks:
+  observability:
+    driver: bridge
+
+volumes:
+  loki-data:
+  grafana-data:
+  postgres-data:
+  minio-data:
+  localstack-data:
+  promtail-positions:

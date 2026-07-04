@@ -1,0 +1,36 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: findings
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: findings
+          __path__: /repos/*/findings.jsonl
+    pipeline_stages:
+      # Promote the fields dashboards filter/group by into real Loki labels,
+      # so Grafana can do `sum by (severity) (...)` without re-parsing JSON
+      # on every query.
+      - json:
+          expressions:
+            severity: severity
+            source: source
+            category: category
+            timestamp: timestamp
+      - labels:
+          severity:
+          source:
+          category:
+      # Use the finding's own timestamp (when it was generated) instead of
+      # promtail's ingestion time.
+      - timestamp:
+          source: timestamp
+          format: RFC3339

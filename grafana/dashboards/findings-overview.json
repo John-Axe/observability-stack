@@ -1,0 +1,118 @@
+{
+  "title": "Security Findings Overview",
+  "uid": "findings-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "editable": true,
+  "time": { "from": "now-24h", "to": "now" },
+  "refresh": "30s",
+  "tags": ["security", "findings"],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Findings by severity",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (severity) (count_over_time({job=\"findings\"}[$__range]))",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "mappings": [],
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Findings over time by source",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (source) (count_over_time({job=\"findings\"}[$__interval]))",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 40, "stacking": { "mode": "normal" } } },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 3,
+      "title": "Findings by category",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (category) (count_over_time({job=\"findings\"}[$__range]))",
+          "queryType": "range"
+        }
+      ],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] } }
+    },
+    {
+      "id": 4,
+      "title": "Critical findings (last 24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"findings\", severity=\"critical\"}[$__range]))",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Total findings (last 24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        { "refId": "A", "expr": "sum(count_over_time({job=\"findings\"}[$__range]))", "queryType": "range" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Raw findings",
+      "type": "logs",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [{ "refId": "A", "expr": "{job=\"findings\"}", "queryType": "range" }],
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true }
+    }
+  ]
+}
